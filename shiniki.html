@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>侵域 - Territory Breach -</title>
+  <style>
+    :root {
+      --bg: #0e1117;
+      --panel: #171c25;
+      --panel2: #1f2632;
+      --line: #364153;
+      --text: #eef3fa;
+      --muted: #9dadc3;
+      --blue: #59a6ff;
+      --red: #ff6f87;
+      --gold: #ffd966;
+      --green: #88f7a1;
+      --shadow: 0 16px 40px rgba(0,0,0,.32);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #0b0e13 0%, #131925 100%); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button { font: inherit; }
+
+    .screen {
+      min-height: 100vh;
+      display: none;
+      padding: 24px;
+    }
+    .screen.active { display: flex; }
+
+    .center-wrap {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero {
+      width: 100%;
+      max-width: 920px;
+      background: rgba(23, 28, 37, .92);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      text-align: center;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 60px);
+      letter-spacing: .08em;
+    }
+    .hero .sub {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+    .hero .tag {
+      display: inline-block;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      color: var(--gold);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      letter-spacing: .12em;
+    }
+    .hero-buttons {
+      margin-top: 28px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .14s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: linear-gradient(135deg, #4f81ff, #70adff); color: #fff; }
+    .btn.secondary { background: #293243; color: #fff; border: 1px solid var(--line); }
+    .btn.danger { background: linear-gradient(135deg, #d94a62, #ff7c8f); color: #fff; }
+    .btn.small { padding: 9px 12px; border-radius: 12px; font-size: 13px; }
+
+    .rules-card {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(23, 28, 37, .94);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 26px;
+      display: grid;
+      gap: 20px;
+    }
+    .rules-head h2 { margin: 0 0 6px; font-size: 30px; }
+    .rules-head p { margin: 0; color: var(--muted); line-height: 1.8; }
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+    }
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .rule-list {
+      display: grid;
+      gap: 10px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .rule-item {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .skill-book {
+      display: grid;
+      gap: 10px;
+      max-height: 620px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .skill-book-item {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .skill-book-item .t {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .type-badge {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .rules-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .game-screen {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .left-col {
+      display: grid;
+      gap: 18px;
+      position: sticky;
+      top: 18px;
+    }
+    .card-panel {
+      background: rgba(23, 28, 37, .94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .status-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .status-row strong { text-align: right; }
+    .mini {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 12px;
+    }
+    .score-box {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .score-item {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .score-item .n {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 6px 0;
+    }
+    .score-item .d { color: var(--muted); font-size: 13px; }
+
+    .main-col {
+      display: grid;
+      gap: 18px;
+    }
+    .battle-panel {
+      background: rgba(23, 28, 37, .94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .banner {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+    .board-wrap {
+      display: flex;
+      justify-content: center;
+    }
+    .board {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(58px, 96px));
+      grid-template-rows: repeat(6, minmax(58px, 96px));
+      gap: 8px;
+      padding: 18px;
+      background: #11161e;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      width: fit-content;
+    }
+    .divider-label {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f141b;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .divider-top { top: 10px; }
+    .divider-mid { top: calc(50% - 16px); }
+    .divider-bottom { bottom: 10px; }
+
+    .cell {
+      position: relative;
+      border: 1px solid #46546b;
+      border-radius: 20px;
+      background: #1f2734;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: .14s ease;
+      min-width: 58px;
+      min-height: 58px;
+      overflow: hidden;
+    }
+    .cell:hover { transform: translateY(-1px); }
+    .cell.player-zone { box-shadow: inset 0 0 0 1px rgba(89,166,255,.18); }
+    .cell.enemy-zone { box-shadow: inset 0 0 0 1px rgba(255,111,135,.12); }
+    .cell.placeable { box-shadow: inset 0 0 0 2px rgba(136,247,161,.34); }
+    .cell.disabled { opacity: .45; cursor: not-allowed; }
+    .cell.locked { background: repeating-linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.03) 6px, rgba(255,255,255,.01) 6px, rgba(255,255,255,.01) 12px); }
+    .cell.selected { outline: 2px solid var(--green); }
+    .cell.flash-trap {
+      animation: trapFlash .75s ease 1;
+    }
+    .cell.flash-place {
+      animation: placeFlash .45s ease 1;
+    }
+    .cell.flash-scout {
+      animation: scoutFlash .75s ease 1;
+    }
+    @keyframes trapFlash {
+      0% { box-shadow: inset 0 0 0 0 rgba(255,217,102,0); background: #1f2734; }
+      35% { box-shadow: inset 0 0 0 999px rgba(255,217,102,.28); background: #433820; }
+      100% { box-shadow: inset 0 0 0 0 rgba(255,217,102,0); background: #1f2734; }
+    }
+    @keyframes placeFlash {
+      0% { transform: scale(.94); }
+      100% { transform: scale(1); }
+    }
+    @keyframes scoutFlash {
+      0% { box-shadow: inset 0 0 0 0 rgba(89,166,255,0); }
+      40% { box-shadow: inset 0 0 0 999px rgba(89,166,255,.24); }
+      100% { box-shadow: inset 0 0 0 0 rgba(89,166,255,0); }
+    }
+
+    .piece {
+      width: 56%;
+      height: 56%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .04em;
+      box-shadow: inset 0 3px 10px rgba(255,255,255,.18), 0 8px 18px rgba(0,0,0,.26);
+      z-index: 1;
+    }
+    .piece.player { background: radial-gradient(circle at 30% 30%, #b9dcff, var(--blue)); color: #08131f; }
+    .piece.npc { background: radial-gradient(circle at 30% 30%, #ffc0cb, var(--red)); color: #250a12; }
+
+    .trap-mark {
+      position: absolute;
+      top: 6px;
+      right: 7px;
+      font-size: 11px;
+      color: var(--gold);
+      z-index: 2;
+      text-shadow: 0 0 8px rgba(255,217,102,.4);
+    }
+    .decoy-mark {
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      font-size: 10px;
+      color: #d3d9e6;
+      z-index: 2;
+    }
+    .blast-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: radial-gradient(circle, rgba(255,217,102,.28) 0%, rgba(255,217,102,.08) 42%, rgba(255,217,102,0) 75%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bottom-panel {
+      background: rgba(23, 28, 37, .94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+    .hand-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .hand {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .skill-card {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .skill-card.used { opacity: .42; filter: grayscale(.65); }
+    .skill-card .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .skill-card .name { font-size: 16px; font-weight: 900; }
+    .skill-card .desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+    .npc-panel {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .npc-hidden-card {
+      padding: 9px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+    }
+
+    .log {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .log-item {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #d9e0ea;
+    }
+
+    .winner {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    @media (max-width: 1120px) {
+      .rules-grid { grid-template-columns: 1fr; }
+      .game-screen { grid-template-columns: 1fr; }
+      .left-col { position: static; }
+      .hand { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="screen active" id="screenOpening">
+    <div class="center-wrap">
+      <div class="hero">
+        <div class="tag">SINGLE PLAYER TACTICAL BOARD GAME</div>
+        <h1>侵域</h1>
+        <div class="sub">
+          相手領域へ侵攻し、罠とスキルを読み合う。
+          <br>NPCとの10ターン心理戦プロトタイプ。
+        </div>
+        <div class="hero-buttons">
+          <button class="btn primary" id="toRulesBtn">ゲームを始める</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screenRules">
+    <div class="rules-card">
+      <div class="rules-head">
+        <h2>ルール説明</h2>
+        <p>まずルールと全10種のスキルを確認し、その後で本番画面へ進みます。あなたもNPCも、ここにある10種の中からランダムで3枚ずつ所持します。NPCが何を持っているかは見えません。</p>
+      </div>
+      <div class="rules-grid">
+        <div class="panel">
+          <h3>基本ルール</h3>
+          <div class="rule-list">
+            <div class="rule-item">盤面は <strong>5×6の30マス</strong>。上3行がNPC領域、下3行があなたの領域です。</div>
+            <div class="rule-item">開始時に、あなたとNPCはそれぞれ <strong>自分の領域に罠を1つ</strong> 仕掛けます。相手が侵攻して踏む想定です。</div>
+            <div class="rule-item">各ターンでできる基本行動は <strong>相手領域に駒を1つ置く</strong> ことです。加えて、<strong>1ターンにスキルは1枚まで</strong> 使用できます。</div>
+            <div class="rule-item">罠を踏むと、そのマスを中心に <strong>十字5マス</strong> の自分の駒が除去されます。</div>
+            <div class="rule-item">あなたの罠には <strong>小さい目印</strong> が表示されます。NPCには見えません。NPCの罠位置はあなたには見えません。</div>
+            <div class="rule-item">全10ターン終了時、<strong>総得点が高い側の勝ち</strong> です。</div>
+            <div class="rule-item">得点 = 相手領域に残った自分の駒数 + 中央列ボーナス + 連結ボーナス。</div>
+            <div class="rule-item">連結ボーナスは、自分の駒が上下左右で隣接しているペア数です。</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>全スキル一覧</h3>
+          <div class="skill-book" id="rulesSkillBook"></div>
+        </div>
+      </div>
+      <div class="rules-actions">
+        <button class="btn secondary" id="backOpeningBtn">戻る</button>
+        <button class="btn primary" id="startGameBtn">本番画面へ</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screenGame">
+    <div class="game-screen">
+      <div class="left-col">
+        <div class="card-panel">
+          <h2 style="margin:0; font-size:22px;">侵域 - 本番</h2>
+          <div class="status-grid">
+            <div class="status-row"><span>フェーズ</span><strong id="phaseText">罠設置</strong></div>
+            <div class="status-row"><span>手番</span><strong id="turnText">あなた</strong></div>
+            <div class="status-row"><span>ラウンド</span><strong id="roundText">0 / 10</strong></div>
+            <div class="status-row"><span>選択中スキル</span><strong id="selectedSkillText">なし</strong></div>
+          </div>
+          <div class="mini">あなたは1人で遊びます。対戦相手はNPCです。NPCは所持スキルを公開せず、適宜ランダムなタイミングで使用します。</div>
+          <div class="hero-buttons" style="justify-content:flex-start; margin-top:14px;">
+            <button class="btn secondary small" id="backRulesBtn">ルールへ戻る</button>
+            <button class="btn danger small" id="resetGameBtn">最初から</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <h3 style="margin:0; font-size:18px;">スコア</h3>
+          <div class="score-box">
+            <div class="score-item">
+              <div>あなた</div>
+              <div class="n" id="playerScore">0</div>
+              <div class="d" id="playerBreakdown">侵攻0 / 中央0 / 連結0</div>
+            </div>
+            <div class="score-item">
+              <div>NPC</div>
+              <div class="n" id="npcScore">0</div>
+              <div class="d" id="npcBreakdown">侵攻0 / 中央0 / 連結0</div>
+            </div>
+          </div>
+          <div class="winner" id="winnerText">ゲーム進行中</div>
+        </div>
+      </div>
+
+      <div class="main-col">
+        <div class="battle-panel">
+          <div class="banner" id="bannerText">あなたは自分の領域（下3行）に罠を1つ設置してください。</div>
+          <div class="board-wrap">
+            <div class="board" id="board">
+              <div class="divider-label divider-top">NPC領域</div>
+              <div class="divider-label divider-mid">境界</div>
+              <div class="divider-label divider-bottom">あなたの領域</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-panel">
+          <div class="hand-head">
+            <div>
+              <h3 style="margin:0 0 6px; font-size:18px;">あなたのスキルカード</h3>
+              <div style="color:var(--muted); font-size:13px;">全10種の中からランダムで3枚。1ターンに1枚まで使用可能。</div>
+            </div>
+            <button class="btn secondary small" id="cancelSkillBtn">スキル選択解除</button>
+          </div>
+          <div class="hand" id="playerHand"></div>
+
+          <div>
+            <h3 style="margin:0 0 8px; font-size:18px;">NPCの手札</h3>
+            <div class="npc-panel" id="npcHandPreview"></div>
+          </div>
+
+          <div>
+            <h3 style="margin:0 0 8px; font-size:18px;">ログ</h3>
+            <div class="log" id="log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const ROWS = 6;
+    const COLS = 5;
+    const TOTAL_ROUNDS = 10;
+    const PLAYER = 'player';
+    const NPC = 'npc';
+
+    const screens = {
+      opening: document.getElementById('screenOpening'),
+      rules: document.getElementById('screenRules'),
+      game: document.getElementById('screenGame')
+    };
+
+    const ui = {
+      board: document.getElementById('board'),
+      log: document.getElementById('log'),
+      playerHand: document.getElementById('playerHand'),
+      npcHandPreview: document.getElementById('npcHandPreview'),
+      rulesSkillBook: document.getElementById('rulesSkillBook'),
+      phaseText: document.getElementById('phaseText'),
+      turnText: document.getElementById('turnText'),
+      roundText: document.getElementById('roundText'),
+      selectedSkillText: document.getElementById('selectedSkillText'),
+      playerScore: document.getElementById('playerScore'),
+      npcScore: document.getElementById('npcScore'),
+      playerBreakdown: document.getElementById('playerBreakdown'),
+      npcBreakdown: document.getElementById('npcBreakdown'),
+      bannerText: document.getElementById('bannerText'),
+      winnerText: document.getElementById('winnerText')
+    };
+
+    const SKILLS = [
+      {
+        id: 'rapid_assault',
+        name: '迅速侵攻',
+        type: '侵攻',
+        desc: 'このターン、相手領域に連続で2個まで駒を置ける。',
+        target: false,
+        use(actor) {
+          state.pending = { kind: 'rapid_assault', actor, stepsLeft: 2 };
+          log(`${actorName(actor)}が「迅速侵攻」を発動。2個まで設置可能。`);
+          return true;
+        }
+      },
+      {
+        id: 'forced_march',
+        name: '強行突破',
+        type: '侵攻',
+        desc: '自分の既存の侵攻駒に隣接するマスに追加で1個置ける。',
+        target: false,
+        use(actor) {
+          state.pending = { kind: 'forced_march_place', actor };
+          log(`${actorName(actor)}が「強行突破」を発動。既存駒に隣接するマスへ追加配置。`);
+          return true;
+        }
+      },
+      {
+        id: 'scout',
+        name: '索敵',
+        type: '偵察',
+        desc: '任意の1マスが罠かどうか確認できる。',
+        target: true,
+        use(actor, index) {
+          flashCell(index, 'flash-scout');
+          const yes = !!state.board[index].trapOwner;
+          log(`${actorName(actor)}が「索敵」を使用。${coord(index)} は ${yes ? '罠あり' : '罠なし'}。`);
+          return true;
+        }
+      },
+      {
+        id: 'disarm',
+        name: '看破',
+        type: '偵察',
+        desc: '任意の1マスの罠を無効化する。',
+        target: true,
+        use(actor, index) {
+          const cell = state.board[index];
+          if (!cell.trapOwner) {
+            log('そのマスに罠はありません。');
+            return false;
+          }
+          const owner = cell.trapOwner;
+          cell.trapOwner = null;
+          state.traps[owner] = null;
+          flashCell(index, 'flash-scout');
+          log(`${actorName(actor)}が「看破」を発動。${coord(index)} の罠を解除。`);
+          return true;
+        }
+      },
+      {
+        id: 'disturb',
+        name: '撹乱',
+        type: '妨害',
+        desc: '相手の駒1つを隣接マスへ強制移動させる。',
+        target: true,
+        use(actor, index) {
+          if (state.board[index].occupant !== enemyOf(actor)) {
+            log('相手の駒を選択してください。');
+            return false;
+          }
+          state.pending = { kind: 'disturb_select_dest', actor, from: index };
+          log(`${actorName(actor)}が「撹乱」を発動。移動先の隣接マスを選択。`);
+          return 'pending';
+        }
+      },
+      {
+        id: 'lockdown',
+        name: '封鎖',
+        type: '妨害',
+        desc: '任意の1マスを一時的に封鎖する。',
+        target: true,
+        use(actor, index) {
+          const cell = state.board[index];
+          if (cell.occupant) {
+            log('駒があるマスは封鎖できません。');
+            return false;
+          }
+          cell.lockedBy = actor;
+          cell.lockExpire = state.round + 2;
+          log(`${actorName(actor)}が「封鎖」を発動。${coord(index)} を封鎖。`);
+          return true;
+        }
+      },
+      {
+        id: 'evade',
+        name: '危機回避',
+        type: '防御',
+        desc: 'このターン罠を踏んでも、除去は踏んだマス1個だけになる。',
+        target: false,
+        use(actor) {
+          state.pending = { kind: 'evade_buff', actor };
+          log(`${actorName(actor)}が「危機回避」を発動。今ターンの被害を軽減。`);
+          return true;
+        }
+      },
+      {
+        id: 'safe_drop',
+        name: '分散展開',
+        type: '防御',
+        desc: 'このターンに置いた駒は、置いた瞬間の罠判定を無効化する。',
+        target: false,
+        use(actor) {
+          state.pending = { kind: 'safe_drop', actor };
+          log(`${actorName(actor)}が「分散展開」を発動。今ターンの設置は罠無効。`);
+          return true;
+        }
+      },
+      {
+        id: 'decoy',
+        name: '偽装',
+        type: '心理戦',
+        desc: '任意の1マスに偽の罠表示を置く。実際の罠ではない。',
+        target: true,
+        use(actor, index) {
+          const cell = state.board[index];
+          if (cell.occupant) {
+            log('駒があるマスには偽装できません。');
+            return false;
+          }
+          cell.decoyOwner = actor;
+          log(`${actorName(actor)}が「偽装」を発動。${coord(index)} に偽情報を設置。`);
+          return true;
+        }
+      },
+      {
+        id: 'retaliate',
+        name: '誘爆',
+        type: '心理戦',
+        desc: 'このターン、自分が罠を踏んだら相手の駒も1個除去する。',
+        target: false,
+        use(actor) {
+          state.pending = { kind: 'retaliate', actor };
+          log(`${actorName(actor)}が「誘爆」を発動。罠発動時に相手駒を1個除去。`);
+          return true;
+        }
+      }
+    ];
+
+    const state = {
+      screen: 'opening',
+      board: [],
+      phase: 'trap_player',
+      turn: PLAYER,
+      round: 0,
+      gameOver: false,
+      selectedSkillId: null,
+      pending: null,
+      skillUsedThisTurn: false,
+      traps: { player: null, npc: null },
+      hands: { player: [], npc: [] },
+      aiThinking: false,
+      rearmQueue: null,
+      npcMemory: {
+        suspectedCells: new Set(),
+        recentTrapHits: []
+      }
+    };
+
+    function showScreen(name) {
+      Object.values(screens).forEach(el => el.classList.remove('active'));
+      screens[name].classList.add('active');
+      state.screen = name;
+    }
+
+    function createBoard() {
+      return Array.from({ length: ROWS * COLS }, (_, index) => ({
+        index,
+        occupant: null,
+        trapOwner: null,
+        decoyOwner: null,
+        lockedBy: null,
+        lockExpire: null,
+        blast: false
+      }));
+    }
+
+    function actorName(actor) { return actor === PLAYER ? 'あなた' : 'NPC'; }
+    function enemyOf(actor) { return actor === PLAYER ? NPC : PLAYER; }
+    function rowOf(index) { return Math.floor(index / COLS); }
+    function colOf(index) { return index % COLS; }
+    function coord(index) { return `R${rowOf(index)+1}C${colOf(index)+1}`; }
+    function territoryOwner(index) { return rowOf(index) < 3 ? NPC : PLAYER; }
+    function isEnemyTerritory(actor, index) { return territoryOwner(index) === enemyOf(actor); }
+    function isOwnTerritory(actor, index) { return territoryOwner(index) === actor; }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildRulesSkillBook() {
+      ui.rulesSkillBook.innerHTML = '';
+      SKILLS.forEach(skill => {
+        const div = document.createElement('div');
+        div.className = 'skill-book-item';
+        div.innerHTML = `
+          <div class="t"><span>${skill.name}</span><span class="type-badge">${skill.type}</span></div>
+          <div style="color:var(--muted); font-size:13px; line-height:1.7;">${skill.desc}</div>
+        `;
+        ui.rulesSkillBook.appendChild(div);
+      });
+    }
+
+    function dealHands() {
+      state.hands.player = shuffle(SKILLS).slice(0, 3).map(s => ({ ...s, used: false }));
+      state.hands.npc = shuffle(SKILLS).slice(0, 3).map(s => ({ ...s, used: false }));
+    }
+
+    function resetGame() {
+      state.board = createBoard();
+      state.phase = 'trap_player';
+      state.turn = PLAYER;
+      state.round = 0;
+      state.gameOver = false;
+      state.selectedSkillId = null;
+      state.pending = null;
+      state.skillUsedThisTurn = false;
+      state.traps = { player: null, npc: null };
+      state.aiThinking = false;
+      state.rearmQueue = null;
+      state.npcMemory = {
+        suspectedCells: new Set(),
+        recentTrapHits: []
+      };
+      dealHands();
+      ui.log.innerHTML = '';
+      log('ゲーム開始。まずはあなたが自分の領域に罠を1つ設置。');
+      render();
+    }
+
+    function log(message) {
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.textContent = message;
+      ui.log.prepend(div);
+    }
+
+    function getAdjacent(index) {
+      const r = rowOf(index), c = colOf(index);
+      const out = [];
+      [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc]) => {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) out.push(nr * COLS + nc);
+      });
+      return out;
+    }
+
+    function getCross(index) {
+      return [index, ...getAdjacent(index)];
+    }
+
+    function cleanupLocks() {
+      state.board.forEach(cell => {
+        if (cell.lockedBy && cell.lockExpire !== null && cell.lockExpire <= state.round) {
+          cell.lockedBy = null;
+          cell.lockExpire = null;
+        }
+      });
+    }
+
+    function clearBlastFlags() {
+      state.board.forEach(cell => cell.blast = false);
+    }
+
+    function flashCell(index, className) {
+      const el = ui.board.querySelector(`[data-index="${index}"]`);
+      if (!el) return;
+      el.classList.remove(className);
+      void el.offsetWidth;
+      el.classList.add(className);
+      setTimeout(() => el.classList.remove(className), 760);
+    }
+
+    function placeTrap(actor, index) {
+      if (!isOwnTerritory(actor, index)) {
+        log('罠は自分の領域に設置してください。');
+        return false;
+      }
+      const cell = state.board[index];
+      if (cell.trapOwner) {
+        log('そのマスには既に罠があります。');
+        return false;
+      }
+      if (state.traps[actor] !== null) {
+        const old = state.traps[actor];
+        if (state.board[old]) state.board[old].trapOwner = null;
+      }
+      cell.trapOwner = actor;
+      state.traps[actor] = index;
+      log(`${actorName(actor)}が ${coord(index)} に罠を設置。`);
+      return true;
+    }
+
+    function canPlace(actor, index) {
+      const cell = state.board[index];
+      if (!isEnemyTerritory(actor, index)) return false;
+      if (cell.occupant) return false;
+      if (cell.lockedBy && cell.lockExpire > state.round) return false;
+      return true;
+    }
+
+    function removePiece(index) {
+      state.board[index].occupant = null;
+    }
+
+    function triggerTrap(actor, index, flags = {}) {
+      const affected = flags.evade ? [index] : getCross(index);
+      let removed = 0;
+      clearBlastFlags();
+      affected.forEach(i => {
+        state.board[i].blast = true;
+        if (state.board[i].occupant === actor) {
+          removePiece(i);
+          removed += 1;
+        }
+      });
+      flashCell(index, 'flash-trap');
+      log(`${actorName(actor)}が ${coord(index)} の罠にかかった。${removed} 個の駒が除去された。`);
+      const owner = state.board[index].trapOwner;
+      state.board[index].trapOwner = null;
+      state.traps[owner] = null;
+      state.rearmQueue = actor;
+      if (actor === NPC) {
+        state.npcMemory.recentTrapHits.push(index);
+        state.npcMemory.recentTrapHits = state.npcMemory.recentTrapHits.slice(-4);
+        getCross(index).forEach(i => state.npcMemory.suspectedCells.add(i));
+      }
+      log(`${actorName(actor)}は罠にかかったため、新たに自領域へ罠を1つ再設置できます。`);
+
+      if (flags.retaliate) {
+        const enemyIndex = state.board.findIndex(c => c.occupant === enemyOf(actor));
+        if (enemyIndex >= 0) {
+          removePiece(enemyIndex);
+          log(`${actorName(actor)}の「誘爆」により、${actorName(enemyOf(actor))}の駒1個も除去。`);
+        }
+      }
+      render();
+      setTimeout(() => {
+        clearBlastFlags();
+        render();
+      }, 700);
+    }
+
+    function placePiece(actor, index, flags = {}) {
+      if (!canPlace(actor, index)) return false;
+      state.board[index].occupant = actor;
+      flashCell(index, 'flash-place');
+      log(`${actorName(actor)}が ${coord(index)} に侵攻駒を設置。`);
+      const steppedTrap = state.board[index].trapOwner === enemyOf(actor);
+      if (steppedTrap && !flags.safeDrop) {
+        triggerTrap(actor, index, flags);
+      }
+      return true;
+    }
+
+    function score(actor) {
+      let invasion = 0, center = 0, links = 0;
+      state.board.forEach((cell, index) => {
+        if (cell.occupant !== actor) return;
+        invasion += 1;
+        if (colOf(index) === 2) center += 1;
+        const right = index + 1;
+        const down = index + COLS;
+        if (colOf(index) !== COLS - 1 && state.board[right]?.occupant === actor) links += 1;
+        if (down < state.board.length && state.board[down]?.occupant === actor) links += 1;
+      });
+      return { invasion, center, links, total: invasion + center + links };
+    }
+
+    function updateStatus() {
+      const ps = score(PLAYER), ns = score(NPC);
+      ui.playerScore.textContent = ps.total;
+      ui.npcScore.textContent = ns.total;
+      ui.playerBreakdown.textContent = `侵攻${ps.invasion} / 中央${ps.center} / 連結${ps.links}`;
+      ui.npcBreakdown.textContent = `侵攻${ns.invasion} / 中央${ns.center} / 連結${ns.links}`;
+      ui.phaseText.textContent = state.gameOver ? '終了' : (state.phase === 'trap_player' || state.phase === 'trap_npc' ? '罠設置' : '対戦中');
+      ui.turnText.textContent = state.gameOver ? '-' : (state.turn === PLAYER ? 'あなた' : 'NPC');
+      ui.roundText.textContent = `${Math.min(state.round, TOTAL_ROUNDS)} / ${TOTAL_ROUNDS}`;
+      const skill = state.selectedSkillId ? state.hands.player.find(s => s.id === state.selectedSkillId) : null;
+      ui.selectedSkillText.textContent = skill ? skill.name : 'なし';
+
+      if (state.gameOver) {
+        if (ps.total > ns.total) ui.winnerText.textContent = `勝利。 ${ps.total} - ${ns.total}`;
+        else if (ns.total > ps.total) ui.winnerText.textContent = `敗北。 ${ps.total} - ${ns.total}`;
+        else ui.winnerText.textContent = `引き分け。 ${ps.total} - ${ns.total}`;
+      } else {
+        ui.winnerText.textContent = 'ゲーム進行中';
+      }
+
+      if (state.phase === 'trap_player') {
+        ui.bannerText.textContent = state.rearmQueue === PLAYER
+          ? 'あなたは罠にかかったため、自分の領域（下3行）に新しい罠を1つ再設置してください。'
+          : 'あなたは自分の領域（下3行）に罠を1つ設置してください。あなたの罠は小さいマークで見えます。';
+      } else if (state.phase === 'trap_npc') {
+        ui.bannerText.textContent = state.rearmQueue === NPC
+          ? 'NPCが罠を再設置中です。少し待ってください。'
+          : 'NPCが自分の領域に罠を設置中です。少し待ってください。';
+      } else if (state.gameOver) {
+        ui.bannerText.textContent = 'ゲーム終了。ログとスコアを確認してください。';
+      } else if (state.turn === PLAYER) {
+        ui.bannerText.textContent = 'あなたの手番です。相手領域に駒を置くか、スキルを使ってください。';
+      } else {
+        ui.bannerText.textContent = 'NPCの手番です。';
+      }
+    }
+
+    function renderNpcHandPreview() {
+      ui.npcHandPreview.innerHTML = '';
+      state.hands.npc.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'npc-hidden-card';
+        div.textContent = card.used ? '使用済みの伏せ札' : '伏せ札';
+        ui.npcHandPreview.appendChild(div);
+      });
+    }
+
+    function renderPlayerHand() {
+      ui.playerHand.innerHTML = '';
+      state.hands.player.forEach(card => {
+        const el = document.createElement('div');
+        el.className = 'skill-card';
+        if (card.used) el.classList.add('used');
+        el.innerHTML = `
+          <div class="top">
+            <div class="name">${card.name}</div>
+            <div class="type-badge">${card.type}</div>
+          </div>
+          <div class="desc">${card.desc}</div>
+        `;
+        const btn = document.createElement('button');
+        btn.className = 'btn secondary small';
+        btn.textContent = card.used ? '使用済み' : '使う';
+        btn.disabled = card.used || state.turn !== PLAYER || state.skillUsedThisTurn || state.phase !== 'battle' || state.gameOver || state.aiThinking;
+        btn.addEventListener('click', () => activatePlayerSkill(card.id));
+        el.appendChild(btn);
+        ui.playerHand.appendChild(el);
+      });
+    }
+
+    function renderBoard() {
+      ui.board.querySelectorAll('.cell').forEach(el => el.remove());
+      state.board.forEach(cell => {
+        const index = cell.index;
+        const el = document.createElement('button');
+        el.className = 'cell';
+        el.dataset.index = index;
+        el.classList.add(territoryOwner(index) === PLAYER ? 'player-zone' : 'enemy-zone');
+        if (canPlayerInteractCell(index)) el.classList.add('placeable');
+        if (cell.lockedBy && cell.lockExpire > state.round) el.classList.add('locked');
+        if (state.selectedSkillId) el.classList.add('selected');
+        if (state.phase === 'trap_npc' || state.turn === NPC || state.aiThinking) el.disabled = true;
+
+        if (cell.occupant) {
+          const piece = document.createElement('div');
+          piece.className = `piece ${cell.occupant === PLAYER ? 'player' : 'npc'}`;
+          piece.textContent = cell.occupant === PLAYER ? 'YOU' : 'NPC';
+          el.appendChild(piece);
+        }
+
+        if (cell.trapOwner === PLAYER) {
+          const trap = document.createElement('div');
+          trap.className = 'trap-mark';
+          trap.textContent = '▲';
+          el.appendChild(trap);
+        }
+        if (cell.decoyOwner === PLAYER) {
+          const d = document.createElement('div');
+          d.className = 'decoy-mark';
+          d.textContent = '!?';
+          el.appendChild(d);
+        }
+        if (cell.blast) {
+          const ring = document.createElement('div');
+          ring.className = 'blast-ring';
+          el.appendChild(ring);
+        }
+
+        el.addEventListener('click', () => onBoardClick(index));
+        ui.board.appendChild(el);
+      });
+    }
+
+    function canPlayerInteractCell(index) {
+      if (state.gameOver || state.aiThinking) return false;
+      if (state.phase === 'trap_player') return isOwnTerritory(PLAYER, index);
+      if (state.phase !== 'battle' || state.turn !== PLAYER) return false;
+      if (state.pending && state.pending.actor === PLAYER) return true;
+      if (state.selectedSkillId) return true;
+      return canPlace(PLAYER, index);
+    }
+
+    function render() {
+      renderBoard();
+      renderPlayerHand();
+      renderNpcHandPreview();
+      updateStatus();
+    }
+
+    function endTurn() {
+      state.pending = null;
+      state.selectedSkillId = null;
+
+      if (state.rearmQueue === PLAYER) {
+        state.phase = 'trap_player';
+        state.turn = PLAYER;
+        state.skillUsedThisTurn = false;
+        render();
+        return;
+      }
+      if (state.rearmQueue === NPC) {
+        state.phase = 'trap_npc';
+        state.turn = NPC;
+        state.skillUsedThisTurn = false;
+        render();
+        npcRearmTrap();
+        return;
+      }
+
+      if (state.turn === NPC) state.round += 1;
+      cleanupLocks();
+      if (state.round > TOTAL_ROUNDS) {
+        finishGame();
+        return;
+      }
+      state.turn = enemyOf(state.turn);
+      state.skillUsedThisTurn = false;
+      render();
+      if (state.turn === NPC && !state.gameOver) {
+        npcTurn();
+      }
+    }
+
+    function finishGame() {
+      state.gameOver = true;
+      const ps = score(PLAYER), ns = score(NPC);
+      if (ps.total > ns.total) log(`ゲーム終了。あなたの勝利。 ${ps.total} - ${ns.total}`);
+      else if (ns.total > ps.total) log(`ゲーム終了。NPCの勝利。 ${ps.total} - ${ns.total}`);
+      else log(`ゲーム終了。引き分け。 ${ps.total} - ${ns.total}`);
+      render();
+    }
+
+    function pendingFlagsFor(actor) {
+      return {
+        safeDrop: state.pending?.kind === 'safe_drop' && state.pending.actor === actor,
+        evade: state.pending?.kind === 'evade_buff' && state.pending.actor === actor,
+        retaliate: state.pending?.kind === 'retaliate' && state.pending.actor === actor
+      };
+    }
+
+    function activatePlayerSkill(skillId) {
+      if (state.turn !== PLAYER || state.skillUsedThisTurn || state.phase !== 'battle' || state.gameOver) return;
+      const card = state.hands.player.find(s => s.id === skillId);
+      if (!card || card.used) return;
+      if (card.target) {
+        state.selectedSkillId = skillId;
+        render();
+        log(`あなたが「${card.name}」を選択。対象マスをクリックしてください。`);
+        return;
+      }
+      const result = card.use(PLAYER);
+      if (result) {
+        card.used = true;
+        state.skillUsedThisTurn = true;
+        render();
+      }
+    }
+
+    function consumePlayerTargetSkill(index) {
+      const card = state.hands.player.find(s => s.id === state.selectedSkillId);
+      if (!card || card.used) return;
+      const result = card.use(PLAYER, index);
+      if (result === false) return;
+      card.used = true;
+      state.skillUsedThisTurn = true;
+      state.selectedSkillId = null;
+      render();
+      if (result !== 'pending') {
+        // targeted skill alone does not end turn
+      }
+    }
+
+    function onBoardClick(index) {
+      if (state.gameOver || state.aiThinking) return;
+
+      if (state.phase === 'trap_player') {
+        if (placeTrap(PLAYER, index)) {
+          if (state.rearmQueue === PLAYER) {
+            state.rearmQueue = null;
+            state.phase = 'battle';
+            state.turn = NPC;
+            render();
+            setTimeout(() => npcTurn(), 550);
+          } else {
+            state.phase = 'trap_npc';
+            render();
+            setTimeout(() => {
+              npcPlaceTrap();
+            }, 650);
+          }
+        }
+        render();
+        return;
+      }
+
+      if (state.turn !== PLAYER || state.phase !== 'battle') return;
+
+      if (state.selectedSkillId) {
+        consumePlayerTargetSkill(index);
+        return;
+      }
+
+      if (resolvePendingClickForPlayer(index)) return;
+
+      const ok = placePiece(PLAYER, index, pendingFlagsFor(PLAYER));
+      if (!ok) return;
+      endTurn();
+    }
+
+    function resolvePendingClickForPlayer(index) {
+      if (!state.pending || state.pending.actor !== PLAYER) return false;
+      const p = state.pending;
+
+      if (p.kind === 'disturb_select_dest') {
+        if (!getAdjacent(p.from).includes(index)) {
+          log('隣接マスを選択してください。');
+          return true;
+        }
+        if (state.board[index].occupant) {
+          log('移動先に駒があります。');
+          return true;
+        }
+        state.board[index].occupant = state.board[p.from].occupant;
+        state.board[p.from].occupant = null;
+        log(`あなたが相手駒を ${coord(index)} へ移動。`);
+        endTurn();
+        return true;
+      }
+
+      if (p.kind === 'rapid_assault') {
+        const ok = placePiece(PLAYER, index, pendingFlagsFor(PLAYER));
+        if (!ok) return true;
+        p.stepsLeft -= 1;
+        if (p.stepsLeft <= 0) endTurn();
+        else {
+          log('「迅速侵攻」継続。もう1個置けます。');
+          render();
+        }
+        return true;
+      }
+
+      if (p.kind === 'forced_march_place') {
+        const adjOwn = getAdjacent(index).some(i => state.board[i].occupant === PLAYER);
+        if (!adjOwn) {
+          log('既存の自分の駒に隣接するマスを選んでください。');
+          return true;
+        }
+        const ok = placePiece(PLAYER, index, pendingFlagsFor(PLAYER));
+        if (!ok) return true;
+        endTurn();
+        return true;
+      }
+
+      return false;
+    }
+
+    function pickBestTrapCellForNpc() {
+      const candidates = state.board.filter(c => isOwnTerritory(NPC, c.index) && !c.trapOwner).map(c => c.index);
+      if (!candidates.length) return null;
+      const weights = candidates.map(index => {
+        const row = rowOf(index);
+        const col = colOf(index);
+        const centerBias = 3 - Math.abs(col - 2);
+        const entryBias = row === 2 ? 3 : row === 1 ? 2 : 1;
+        const nearbyPlayer = getAdjacent(index).filter(i => state.board[i].occupant === PLAYER).length;
+        return { index, score: centerBias + entryBias + nearbyPlayer * 2 };
+      }).sort((a,b) => b.score - a.score);
+      return weights[0].index;
+    }
+
+    function npcPlaceTrap() {
+      const target = pickBestTrapCellForNpc();
+      if (target !== null) placeTrap(NPC, target);
+      state.phase = 'battle';
+      state.turn = PLAYER;
+      state.round = 1;
+      log('NPCの罠設置完了。対戦開始。');
+      render();
+    }
+
+    function npcRearmTrap() {
+      state.aiThinking = true;
+      render();
+      setTimeout(() => {
+        const target = pickBestTrapCellForNpc();
+        if (target !== null) placeTrap(NPC, target);
+        state.rearmQueue = null;
+        state.phase = 'battle';
+        state.turn = PLAYER;
+        state.aiThinking = false;
+        log('NPCが罠を再設置。あなたの手番へ。');
+        render();
+      }, 650);
+    }
+
+    function decayNpcMemory() {
+      const fresh = new Set();
+      Array.from(state.npcMemory.suspectedCells).forEach(idx => {
+        if (Math.random() > 0.28) fresh.add(idx);
+      });
+      state.npcMemory.suspectedCells = fresh;
+    }
+
+    function validPlaceIndices(actor) {
+      return state.board.filter(c => canPlace(actor, c.index)).map(c => c.index);
+    }
+
+    function chooseNpcPlace(preferSafe = false) {
+      const candidates = validPlaceIndices(NPC);
+      if (!candidates.length) return null;
+      const npcScoreNow = score(NPC).total;
+      const playerScoreNow = score(PLAYER).total;
+      const losing = npcScoreNow < playerScoreNow;
+      const suspected = state.npcMemory?.suspectedCells ?? new Set();
+
+      const ranked = candidates.map(index => {
+        let scoreVal = 0;
+        const col = colOf(index);
+        const row = rowOf(index);
+        const distCenter = Math.abs(col - 2);
+        scoreVal += (3 - distCenter) * 3;
+        scoreVal += row === 3 ? 3 : row === 4 ? 2 : 1;
+
+        const adjacentOwn = getAdjacent(index).filter(i => state.board[i].occupant === NPC).length;
+        const adjacentEnemy = getAdjacent(index).filter(i => state.board[i].occupant === PLAYER).length;
+        scoreVal += adjacentOwn * 2;
+        scoreVal += adjacentEnemy;
+
+        if (suspected.has(index)) scoreVal -= 9;
+        const dangerAdj = getAdjacent(index).filter(i => suspected.has(i)).length;
+        scoreVal -= dangerAdj * 2;
+
+        if (preferSafe && !suspected.has(index) && dangerAdj === 0) scoreVal += 4;
+
+        if (losing) {
+          scoreVal += (3 - distCenter) * 2;
+          scoreVal += adjacentOwn;
+          scoreVal += Math.max(0, 2 - dangerAdj);
+        } else {
+          if (!suspected.has(index)) scoreVal += 2;
+        }
+
+        scoreVal += Math.random() * 1.2;
+        return { index, score: scoreVal };
+      }).sort((a, b) => b.score - a.score);
+
+      return ranked[0].index;
+    }
+
+    function aiCanUseSkill() {
+      return !state.skillUsedThisTurn && state.phase === 'battle' && !state.gameOver;
+    }
+
+    function chooseNpcSkill() {
+      const options = state.hands.npc.filter(s => !s.used);
+      if (!options.length) return null;
+
+      const npcScoreNow = score(NPC).total;
+      const playerScoreNow = score(PLAYER).total;
+      const losing = npcScoreNow < playerScoreNow;
+      const playerPieces = state.board.filter(c => c.occupant === PLAYER).length;
+      const suspectedCount = state.npcMemory?.suspectedCells?.size ?? 0;
+
+      const weighted = [];
+      options.forEach(skill => {
+        let w = 1;
+        if (skill.id === 'rapid_assault') w += losing ? 5 : 2;
+        if (skill.id === 'forced_march') w += losing ? 4 : 2;
+        if (skill.id === 'scout') w += suspectedCount > 0 ? 4 : 2;
+        if (skill.id === 'disarm') w += suspectedCount > 0 ? 4 : 1;
+        if (skill.id === 'disturb') w += playerPieces > 0 ? 4 : 0;
+        if (skill.id === 'lockdown') w += losing ? 2 : 3;
+        if (skill.id === 'evade') w += 2;
+        if (skill.id === 'safe_drop') w += suspectedCount > 0 ? 4 : (losing ? 3 : 1);
+        if (skill.id === 'decoy') w += 2;
+        if (skill.id === 'retaliate') w += 2;
+        for (let i = 0; i < w; i++) weighted.push(skill);
+      });
+
+      if (Math.random() > (losing ? 0.8 : 0.58)) return null;
+      return weighted[Math.floor(Math.random() * weighted.length)] ?? null;
+    }
+
+    function npcTargetForSkill(skill) {
+      if (!skill.target) return null;
+      if (skill.id === 'scout' || skill.id === 'disarm') {
+        const suspected = Array.from(state.npcMemory?.suspectedCells ?? []);
+        if (suspected.length) {
+          return suspected.sort((a, b) => Math.abs(colOf(a) - 2) - Math.abs(colOf(b) - 2))[0];
+        }
+        const enemyZone = state.board.filter(c => territoryOwner(c.index) === PLAYER).map(c => c.index);
+        const central = enemyZone.sort((a, b) => Math.abs(colOf(a) - 2) - Math.abs(colOf(b) - 2));
+        return central[0] ?? null;
+      }
+      if (skill.id === 'disturb') {
+        const pieces = state.board.filter(c => c.occupant === PLAYER).map(c => c.index);
+        if (!pieces.length) return null;
+        return pieces.sort((a, b) => {
+          const sa = getAdjacent(a).filter(i => state.board[i].occupant === PLAYER).length;
+          const sb = getAdjacent(b).filter(i => state.board[i].occupant === PLAYER).length;
+          return sb - sa;
+        })[0];
+      }
+      if (skill.id === 'lockdown') {
+        const empties = state.board.filter(c => !c.occupant).map(c => c.index);
+        if (!empties.length) return null;
+        return empties.sort((a, b) => Math.abs(colOf(a) - 2) - Math.abs(colOf(b) - 2))[0];
+      }
+      if (skill.id === 'decoy') {
+        const own = state.board.filter(c => territoryOwner(c.index) === NPC && !c.occupant).map(c => c.index);
+        if (!own.length) return null;
+        return own.sort((a, b) => rowOf(b) - rowOf(a))[0];
+      }
+      return null;
+    }
+
+    async function npcTurn() {
+      decayNpcMemory();
+      state.aiThinking = true;
+      render();
+      await wait(700);
+
+      if (aiCanUseSkill()) {
+        const skill = chooseNpcSkill();
+        if (skill) {
+          const target = npcTargetForSkill(skill);
+          let result;
+          if (skill.target && target === null) {
+            result = false;
+          } else {
+            result = skill.use(NPC, target);
+          }
+          if (result !== false) {
+            skill.used = true;
+            state.skillUsedThisTurn = true;
+            render();
+            await wait(600);
+
+            if (result === 'pending' && state.pending?.kind === 'disturb_select_dest' && state.pending.actor === NPC) {
+              const dests = getAdjacent(state.pending.from).filter(i => !state.board[i].occupant && !(state.board[i].lockedBy && state.board[i].lockExpire > state.round));
+              if (dests.length) {
+                const dest = dests[Math.floor(Math.random() * dests.length)];
+                state.board[dest].occupant = state.board[state.pending.from].occupant;
+                state.board[state.pending.from].occupant = null;
+                log(`NPCがあなたの駒を ${coord(dest)} へ移動。`);
+                state.pending = null;
+                state.aiThinking = false;
+                endTurn();
+                return;
+              } else {
+                state.pending = null;
+              }
+            }
+          }
+        }
+      }
+
+      const pending = state.pending;
+      if (pending && pending.actor === NPC) {
+        if (pending.kind === 'rapid_assault') {
+          for (let k = 0; k < pending.stepsLeft; k++) {
+            const place = chooseNpcPlace(true);
+            if (place !== null) {
+              placePiece(NPC, place, pendingFlagsFor(NPC));
+              render();
+              await wait(380);
+            }
+          }
+          state.pending = null;
+          state.aiThinking = false;
+          endTurn();
+          return;
+        }
+        if (pending.kind === 'forced_march_place') {
+          const candidates = validPlaceIndices(NPC).filter(i => getAdjacent(i).some(j => state.board[j].occupant === NPC));
+          const place = candidates[0] ?? chooseNpcPlace(true);
+          if (place !== null) placePiece(NPC, place, pendingFlagsFor(NPC));
+          state.pending = null;
+          state.aiThinking = false;
+          endTurn();
+          return;
+        }
+      }
+
+      const placeIndex = chooseNpcPlace(false);
+      if (placeIndex !== null) {
+        placePiece(NPC, placeIndex, pendingFlagsFor(NPC));
+      } else {
+        log('NPCは置けるマスがなく、ターンを終了。');
+      }
+      state.aiThinking = false;
+      endTurn();
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    document.getElementById('toRulesBtn').addEventListener('click', () => showScreen('rules'));
+    document.getElementById('backOpeningBtn').addEventListener('click', () => showScreen('opening'));
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+      showScreen('game');
+      resetGame();
+    });
+    document.getElementById('backRulesBtn').addEventListener('click', () => showScreen('rules'));
+    document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+    document.getElementById('cancelSkillBtn').addEventListener('click', () => {
+      if (state.turn !== PLAYER) return;
+      state.selectedSkillId = null;
+      if (state.pending && state.pending.actor === PLAYER && ['evade_buff', 'safe_drop', 'retaliate', 'rapid_assault', 'forced_march_place'].includes(state.pending.kind)) {
+        state.pending = null;
+      }
+      render();
+    });
+
+    buildRulesSkillBook();
+    showScreen('opening');
+  </script>
+</body>
+</html>
